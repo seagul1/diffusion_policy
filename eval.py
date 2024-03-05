@@ -18,16 +18,23 @@ import wandb
 import json
 from diffusion_policy.workspace.base_workspace import BaseWorkspace
 
+# 使用@click.command()装饰指定函数，使之成为命令行接口
+# click.option 终端命令行传参
+
 @click.command()
-@click.option('-c', '--checkpoint', required=True)
-@click.option('-o', '--output_dir', required=True)
+# @click.option('-c', '--checkpoint', required=True)
+@click.option('-c', '--checkpoint', default='robodiff_data/epoch=0550-test_mean_score=0.969.ckpt')
+# @click.option('-o', '--output_dir', required=True)
+@click.option('-o', '--output_dir', default='robodiff_data/pusht_eval_output')
 @click.option('-d', '--device', default='cuda:0')
+
 def main(checkpoint, output_dir, device):
     if os.path.exists(output_dir):
         click.confirm(f"Output path {output_dir} already exists! Overwrite?", abort=True)
     pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
     
     # load checkpoint
+    # payload: dict{'cfg': Dictconfig{}, 'state_dict': dict:3{}, 'pickles': dict:3{'_output_dir': byte, 'global_step':byte, 'epoch': byte}}
     payload = torch.load(open(checkpoint, 'rb'), pickle_module=dill)
     cfg = payload['cfg']
     cls = hydra.utils.get_class(cfg._target_)
